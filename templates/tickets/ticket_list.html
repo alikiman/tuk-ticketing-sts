@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %}Tickets | TUK-STS{% endblock %}
+
+{% block content %}
+
+<!-- ================= HEADER ================= -->
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <div class="icon-badge">
+                <i class="bi bi-list-task"></i>
+            </div>
+            <span class="text-muted small">Support Tickets</span>
+        </div>
+
+        <h3 class="fw-bold mb-1">My Tickets</h3>
+
+        <p class="text-muted mb-0">
+            Track and manage all your support requests
+        </p>
+    </div>
+
+    <div class="d-flex gap-2">
+
+        {% if user.role == "student" %}
+        <a href="{% url 'tickets:ticket_create' %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg"></i> New Ticket
+        </a>
+        {% endif %}
+
+    </div>
+
+</div>
+
+<!-- ================= TICKET GRID ================= -->
+<div class="row g-3">
+
+    {% for ticket in tickets %}
+
+    <div class="col-12">
+
+        <div class="card-box d-flex justify-content-between align-items-center flex-wrap gap-3">
+
+            <!-- LEFT INFO -->
+            <div class="d-flex align-items-start gap-3">
+
+                <div class="icon-badge">
+                    <i class="bi bi-ticket-detailed"></i>
+                </div>
+
+                <div>
+
+                    <h5 class="mb-1">
+                        {{ ticket.title }}
+                    </h5>
+
+                    <div class="text-muted small">
+
+                        <span class="me-2">
+                            <i class="bi bi-tag"></i>
+                            {{ ticket.get_category_display }}
+                        </span>
+
+                        <span>
+                            <i class="bi bi-calendar"></i>
+                            {{ ticket.created_at|date:"M d, Y" }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- STATUS -->
+            <div class="d-flex align-items-center gap-3">
+
+                {% if ticket.status == "resolved" %}
+                    <span class="badge text-bg-success px-3 py-2">Resolved</span>
+                {% elif ticket.status == "in_progress" %}
+                    <span class="badge text-bg-info px-3 py-2">In Progress</span>
+                {% elif ticket.status == "open" %}
+                    <span class="badge text-bg-warning px-3 py-2">Open</span>
+                {% else %}
+                    <span class="badge text-bg-secondary px-3 py-2">
+                        {{ ticket.status }}
+                    </span>
+                {% endif %}
+
+                <!-- ACTION -->
+                <a href="{% url 'tickets:ticket_detail' ticket.id %}"
+                   class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-eye"></i> View
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    {% empty %}
+
+    <!-- ================= EMPTY STATE ================= -->
+    <div class="col-12">
+
+        <div class="text-center py-5">
+
+            <i class="bi bi-inbox fs-1 text-muted"></i>
+
+            <h5 class="mt-3">No tickets found</h5>
+
+            <p class="text-muted">
+                Create your first support request to get started
+            </p>
+
+            {% if user.role == "student" %}
+            <a href="{% url 'tickets:ticket_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> Create Ticket
+            </a>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}

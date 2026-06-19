@@ -1,0 +1,339 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Staff Dashboard | TUK-STS{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --tuk-blue: #003366;       /* Official Royal Navy */
+        --tuk-gold: #FFCC00;       /* Official Corporate Gold */
+        --tuk-dark-blue: #001F42;  /* Deep Institutional Base */
+        --border-color: #e2e8f0;
+    }
+
+    /* Top Workspace Header Accent */
+    .workspace-header-card {
+        background: linear-gradient(135deg, var(--tuk-dark-blue), var(--tuk-blue));
+        color: #ffffff;
+        border-radius: 16px;
+        border: none;
+    }
+
+    /* Ticket Container Overhaul */
+    .ticket-workspace-card {
+        background: #ffffff;
+        border: 1px solid var(--border-color) !important;
+        border-radius: 14px !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .ticket-workspace-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 24px rgba(0, 31, 66, 0.08) !important;
+        border-color: rgba(0, 51, 102, 0.25) !important;
+    }
+
+    /* Left Indicator Strip depending on status */
+    .status-strip {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 5px;
+    }
+    .strip-assigned { background-color: #fbbf24; }
+    .strip-in-progress { background-color: #0ea5e9; }
+    .strip-resolved { background-color: #22c55e; }
+    .strip-closed { background-color: #64748b; }
+
+    /* Custom TUK Control Elements */
+    .btn-tuk-action {
+        background: var(--tuk-blue);
+        color: #ffffff;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        font-weight: 600;
+        padding: 8px 16px;
+        border-radius: 10px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-tuk-action:hover {
+        background: #002244;
+        color: var(--tuk-gold);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 51, 102, 0.15);
+    }
+
+    .ticket-id-badge {
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        color: #334155;
+        font-family: 'Courier New', Courier, monospace;
+        font-weight: 700;
+        font-size: 13px;
+        padding: 5px 10px;
+        border-radius: 8px;
+    }
+
+    .ticket-title-text {
+        font-weight: 700;
+        color: var(--tuk-dark-blue);
+        letter-spacing: -0.3px;
+    }
+
+    .meta-timestamp {
+        font-size: 13px;
+        color: #64748b;
+        background: #f8fafc;
+        padding: 6px 12px;
+        border-radius: 8px;
+        border: 1px solid #f1f5f9;
+    }
+
+    /* Interactive Filter Navigation */
+    .nav-pills .nav-link {
+        color: #64748b;
+        font-weight: 500;
+        border-radius: 8px;
+        padding: 8px 16px;
+        transition: all 0.2s ease;
+    }
+    .nav-pills .nav-link.active {
+        background-color: var(--tuk-blue);
+        color: #ffffff;
+    }
+</style>
+
+<!-- ================= EXECUTIVE STAFF HERO ================= -->
+<div class="card workspace-header-card shadow-sm mb-4">
+    <div class="card-body p-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+            <span class="badge text-uppercase mb-2 px-2.5 py-1.5 fw-bold" style="background: rgba(255, 204, 0, 0.15); color: var(--tuk-gold); border: 1px solid rgba(255, 204, 0, 0.3); font-size: 11px; letter-spacing: 0.5px;">
+                <i class="bi bi-briefcase-fill me-1"></i> Staff Administration Desk
+            </span>
+            <h2 class="fw-bold mb-1">Operational Task Queue</h2>
+            <p class="mb-0 text-white-50 small">Review assignments, update task lifecycles, and coordinate institutional fixes.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2 bg-white bg-opacity-10 px-3 py-2 rounded-3 border border-white border-opacity-10">
+            <i class="bi bi-person-circle text-warning fs-4"></i>
+            <div>
+                <span class="d-block text-white-50 small" style="font-size: 11px;">Signed In As</span>
+                <span class="fw-bold text-white small">{{ request.user.username }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= MAIN WORKSPACE PANEL ================= -->
+<section class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h4 class="fw-bold mb-1 text-dark d-flex align-items-center gap-2">
+                <i class="bi bi-hdd-stack-fill" style="color: var(--tuk-blue);"></i> Active Tracked Queue
+            </h4>
+            <p class="text-muted small mb-0">Action operations step-by-step through the administrative pipeline</p>
+        </div>
+        <div>
+            <span class="badge bg-light text-dark border px-3 py-2 rounded-3 fw-semibold">
+                Total Assigned: <span class="text-primary fw-bold">{{ assigned_tickets|length }}</span>
+            </span>
+        </div>
+    </div>
+
+    <!-- Live Client Filtering View Controls -->
+    <div class="px-4 pt-3">
+        <ul class="nav nav-pills gap-1 bg-light p-1 rounded-3 d-inline-flex" id="ticketFilterTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active btn-sm" onclick="filterQueue('all')">All Classes</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link btn-sm" onclick="filterQueue('assigned')">Assigned</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link btn-sm" onclick="filterQueue('in_progress')">In Progress</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link btn-sm" onclick="filterQueue('resolved')">Resolved</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link btn-sm" onclick="filterQueue('closed')">Archived</button>
+            </li>
+        </ul>
+    </div>
+
+    <div class="card-body p-4">
+        {% if assigned_tickets %}
+            <div class="row g-3" id="queueContainer">
+                {% for t in assigned_tickets %}
+                    <div class="col-12 ticket-wrapper-item" data-status="{{ t.status }}">
+                        <!-- TICKET WORKSPACE CARD -->
+                        <div class="card ticket-workspace-card p-4 ps-5">
+                            
+                            <!-- Dynamic Visual Status Edge Strip -->
+                            <div class="status-strip 
+                                {% if t.status == 'assigned' %}strip-assigned
+                                {% elif t.status == 'in_progress' %}strip-in-progress
+                                {% elif t.status == 'resolved' %}strip-resolved
+                                {% else %}strip-closed{% endif %}">
+                            </div>
+
+                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
+                                
+                                <!-- Core Ticket Info -->
+                                <div style="flex: 1;">
+                                    <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+                                        <span class="ticket-id-badge">
+                                            <i class="bi bi-hash"></i>{{ t.id }}
+                                        </span>
+                                        <h4 class="h5 mb-0 ticket-title-text">{{ t.title }}</h4>
+                                        
+                                        <!-- Mobile Badges Layout -->
+                                        <div class="ms-auto d-md-none">
+                                            {% if t.status == "assigned" %}
+                                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2.5 py-1.5 rounded-2 fw-semibold">Assigned</span>
+                                            {% elif t.status == "in_progress" %}
+                                                <span class="badge bg-info-subtle text-info border border-info-subtle px-2.5 py-1.5 rounded-2 fw-semibold">In Progress</span>
+                                            {% elif t.status == "resolved" %}
+                                                <span class="badge bg-success-subtle text-success border border-success-subtle px-2.5 py-1.5 rounded-2 fw-semibold">Resolved</span>
+                                            {% elif t.status == "closed" %}
+                                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2.5 py-1.5 rounded-2 fw-semibold">Closed</span>
+                                            {% else %}
+                                                <span class="badge bg-dark text-white px-2.5 py-1.5 rounded-2 fw-semibold">{{ t.status|title }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <p class="text-secondary mb-0" style="font-size: 14.5px; line-height: 1.6; max-width: 920px;">
+                                        {{ t.description }}
+                                    </p>
+                                </div>
+
+                                <!-- Desktop Status Badge Positioning -->
+                                <div class="d-none d-md-block text-end">
+                                    {% if t.status == "assigned" %}
+                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-2 rounded-2 fw-semibold">Assigned</span>
+                                    {% elif t.status == "in_progress" %}
+                                        <span class="badge bg-info-subtle text-info border border-info-subtle px-3 py-2 rounded-2 fw-semibold">In Progress</span>
+                                    {% elif t.status == "resolved" %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-2 fw-semibold">Resolved</span>
+                                    {% elif t.status == "closed" %}
+                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-3 py-2 rounded-2 fw-semibold">Closed</span>
+                                    {% else %}
+                                        <span class="badge bg-dark text-white px-3 py-2 rounded-2 fw-semibold">{{ t.status|title }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Structural Card Footer Separation -->
+                            <hr class="my-3" style="border-color: var(--border-color); opacity: 0.6;">
+                            
+                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                                <div class="d-flex gap-2 flex-wrap align-items-center">
+                                    {% if t.status == "assigned" %}
+                                        <form method="POST" action="{% url 'tickets:update_ticket_status' t.id %}" class="m-0">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="status" value="in_progress">
+                                            <button type="submit" class="btn btn-sm btn-tuk-action d-inline-flex align-items-center gap-2">
+                                                <i class="bi bi-play-circle-fill"></i> Start Pipeline
+                                            </button>
+                                        </form>
+                                    {% endif %}
+
+                                    {% if t.status == "in_progress" %}
+                                        <form method="POST" action="{% url 'tickets:update_ticket_status' t.id %}" class="m-0">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="status" value="resolved">
+                                            <button type="submit" class="btn btn-sm btn-success px-3 py-2 rounded-3 fw-bold d-inline-flex align-items-center gap-2 border-0 shadow-sm">
+                                                <i class="bi bi-check-circle-fill"></i> Resolve Ticket
+                                            </button>
+                                        </form>
+                                    {% endif %}
+
+                                    {% if t.status == "resolved" %}
+                                        <form method="POST" action="{% url 'tickets:update_ticket_status' t.id %}" class="m-0">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="status" value="closed">
+                                            <button type="submit" class="btn btn-sm btn-dark px-3 py-2 rounded-3 fw-bold d-inline-flex align-items-center gap-2 border-0 shadow-sm">
+                                                <i class="bi bi-lock-fill"></i> Final Archive / Close
+                                            </button>
+                                        </form>
+                                    {% endif %}
+
+                                    <a href="{% url 'tickets:ticket_detail' t.id %}" class="btn btn-sm btn-outline-secondary px-3 py-2 rounded-3 fw-medium bg-white transition-all">
+                                        <i class="bi bi-folder-2-open"></i> Full File View
+                                    </a>
+                                </div>
+                                
+                                {% if t.created_at %}
+                                    <div class="meta-timestamp fw-medium d-inline-flex align-items-center gap-2">
+                                        <i class="bi bi-clock-history text-muted"></i> 
+                                        <span>Logged: <strong class="text-dark">{{ t.created_at|date:"M d, Y" }}</strong></span>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Dynamic Tab Filter Target Workspace Empty State Handling -->
+            <div id="filterEmptyState" class="text-center py-5 my-4 d-none">
+                <div class="bg-light rounded-circle p-4 d-inline-flex mb-3 border shadow-sm">
+                    <i class="bi bi-funnel text-muted fs-1"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-1">No Matching Tasks</h5>
+                <p class="text-muted small mb-0">No active tickets fall under this status type within your working branch queue.</p>
+            </div>
+
+        {% else %}
+            <!-- COMFORTABLE EMPTY STATE WORKSPACE -->
+            <div class="text-center py-5 my-4">
+                <div class="bg-light rounded-circle p-4 d-inline-flex mb-3 border shadow-sm">
+                    <i class="bi bi-shield-check fs-1" style="color: var(--tuk-blue);"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-1">Queue Fully Cleared</h5>
+                <p class="text-muted small mb-0 mx-auto" style="max-width: 400px;">
+                    Great job! No support tickets require your immediate task assignment or action execution at this desk.
+                </p>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Simple client-side instant filtering algorithm -->
+<script>
+    function filterQueue(status) {
+        // Toggle pill visual active configurations
+        const buttons = document.querySelectorAll('#ticketFilterTabs .nav-link');
+        buttons.forEach(btn => btn.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+
+        // Filter actual ticket card view entities
+        const items = document.querySelectorAll('.ticket-wrapper-item');
+        let visibleCount = 0;
+
+        items.forEach(item => {
+            if (status === 'all' || item.getAttribute('data-status') === status) {
+                item.classList.remove('d-none');
+                visibleCount++;
+            } else {
+                item.classList.add('d-none');
+            }
+        });
+
+        // Toggle alternate status empty message frame if category contains 0 objects
+        const dynamicEmptyState = document.getElementById('filterEmptyState');
+        if (dynamicEmptyState) {
+            if (visibleCount === 0) {
+                dynamicEmptyState.classList.remove('d-none');
+            } else {
+                dynamicEmptyState.classList.add('d-none');
+            }
+        }
+    }
+</script>
+{% endblock %}

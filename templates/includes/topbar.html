@@ -1,0 +1,38 @@
+<div class="topbar">
+
+  <!-- LEFT: Toggle + Page Info -->
+  <div class="topbar-left">
+    <button class="sidebar-toggle" data-sidebar-toggle aria-label="Toggle sidebar">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    <div class="topbar-title">
+      <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+      <small>{% block page_subtitle %}TUK Ticketing System{% endblock %}</small>
+    </div>
+  </div>
+
+  <!-- RIGHT: Actions -->
+  <div class="topbar-right">
+
+    <!-- SYSTEM BADGE -->
+    <span class="topbar-badge">
+      TUK STS
+    </span>
+
+    <!-- USER MENU -->
+    <div class="topbar-user">
+      <div class="user-info">
+        <span class="user-name">{{ user.username }}</span>
+        <span class="user-role">{{ user.role|title }}</span>
+      </div>
+      <div class="user-avatar">
+        {{ user.username|first|upper }}
+      </div>
+    </div>
+
+  </div>
+
+</div>

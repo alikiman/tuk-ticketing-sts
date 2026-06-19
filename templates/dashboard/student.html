@@ -1,0 +1,327 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Student Dashboard | TUK-STS{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --tuk-blue: #003366;
+        --tuk-gold: #FFCC00;
+        --tuk-dark-blue: #001F42;
+    }
+
+    /* Dashboard UI Accents */
+    .metric-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border: 1px solid rgba(0, 51, 102, 0.08) !important;
+        cursor: pointer;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 51, 102, 0.05) !important;
+    }
+
+    /* Active Highlight States for Interactive Metric Cards */
+    .metric-card.active-filter {
+        border-color: var(--tuk-blue) !important;
+        box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.15) !important;
+    }
+
+    .bg-tuk-gradient {
+        background: linear-gradient(135deg, var(--tuk-dark-blue), var(--tuk-blue));
+        color: #fff;
+    }
+
+    .btn-tuk-primary {
+        background: var(--tuk-blue);
+        color: #fff;
+        border: none;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .btn-tuk-primary:hover {
+        background: #002244;
+        color: var(--tuk-gold);
+        transform: translateY(-1px);
+    }
+
+    .badge-tuk-gold {
+        background: rgba(255, 204, 0, 0.15);
+        color: #b38600;
+        border: 1px solid rgba(255, 204, 0, 0.3);
+    }
+
+    .table th {
+        font-weight: 600;
+        background-color: #f8fafc !important;
+        color: #475569;
+    }
+
+    .ticket-row {
+        transition: background-color 0.15s ease, opacity 0.2s ease;
+    }
+
+    .ticket-row:hover {
+        background-color: #f8fafc;
+    }
+
+    /* Active styling state override for filter tabs */
+    .filter-btn.active {
+        background-color: var(--tuk-blue) !important;
+        color: #ffffff !important;
+        border-color: var(--tuk-blue) !important;
+    }
+</style>
+
+<div class="card bg-tuk-gradient border-0 rounded-4 shadow-sm mb-4">
+    <div class="card-body p-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+            <span class="badge badge-tuk-gold text-uppercase mb-2 px-2.5 py-1.5 fw-bold" style="font-size: 10px; letter-spacing: 1px;">
+                <i class="bi bi-shield-check"></i> Student Portal Active
+            </span>
+            <h2 class="fw-bold mb-1">Welcome back, {{ request.user.username }}</h2>
+            <p class="mb-0 text-white-50 small">Manage your academic and technical infrastructure support requests efficiently.</p>
+        </div>
+        <div class="bg-white bg-opacity-10 p-3 rounded-3 border border-white border-opacity-10 d-none d-md-block text-center">
+            <span class="d-block text-white-50 small text-uppercase fw-semibold" style="font-size: 10px; letter-spacing: 0.5px;">Current Term Context</span>
+            <span class="fw-bold text-warning">TUK Support Portal</span>
+        </div>
+    </div>
+</div>
+
+<header class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div class="d-flex align-items-center gap-3">
+        <span class="fs-4 bg-white shadow-sm border p-2.5 rounded-3 d-inline-flex align-items-center justify-content-center text-primary">
+            <i class="bi bi-grid-1x2-fill" style="color: var(--tuk-blue);"></i>
+        </span>
+        <div>
+            <h1 class="h4 mb-0 fw-bold text-dark">Operational Overview</h1>
+            <small class="text-muted">Track filed technical tickets in real-time</small>
+        </div>
+    </div>
+
+    <div class="heading-actions d-flex gap-2 flex-wrap">
+        <a href="{% url 'tickets:ticket_create' %}" class="btn btn-tuk-primary px-3.5 py-2 rounded-3 shadow-sm d-inline-flex align-items-center gap-2">
+            <i class="bi bi-plus-lg"></i> Create New Ticket
+        </a>
+        <a href="{% url 'tickets:ticket_list' %}" class="btn btn-outline-secondary px-3 py-2 rounded-3 d-inline-flex align-items-center gap-2 bg-white">
+            <i class="bi bi-list-ul"></i> View All Tickets
+        </a>
+    </div>
+</header>
+
+<section class="row g-3 mb-4">
+    <div class="col-12 col-md-4">
+        <div class="card metric-card border-0 shadow-sm h-100 rounded-3" id="metric-all" data-target-filter="all">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted fw-semibold small text-uppercase" style="letter-spacing: 0.5px;">Total Logged</span>
+                    <span class="p-2 bg-light rounded-3 text-dark border d-inline-flex"><i class="bi bi-ticket-perforated fs-5"></i></span>
+                </div>
+                <h2 class="fw-bold mb-1 display-6 text-dark">{{ total_tickets }}</h2>
+                <small class="text-muted d-block">All standard submission entries</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+        <div class="card metric-card border-0 shadow-sm h-100 rounded-3" id="metric-open" data-target-filter="open">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted fw-semibold small text-uppercase" style="letter-spacing: 0.5px;">Awaiting Review</span>
+                    <span class="p-2 bg-warning-subtle rounded-3 text-warning border border-warning-subtle d-inline-flex"><i class="bi bi-clock-history fs-5"></i></span>
+                </div>
+                <h2 class="fw-bold mb-1 display-6" style="color: #b38600;">{{ open_tickets }}</h2>
+                <small class="text-muted d-block">Pending staff/admin assignment</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+        <div class="card metric-card border-0 shadow-sm h-100 rounded-3" id="metric-resolved" data-target-filter="resolved">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted fw-semibold small text-uppercase" style="letter-spacing: 0.5px;">Resolved Issues</span>
+                    <span class="p-2 bg-success-subtle rounded-3 text-success border border-success-subtle d-inline-flex"><i class="bi bi-check-all fs-5"></i></span>
+                </div>
+                <h2 class="fw-bold mb-1 display-6 text-success">{{ resolved_tickets }}</h2>
+                <small class="text-muted d-block">Completed system operations</small>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="card border-0 shadow-sm mb-4 rounded-3">
+    <div class="card-header bg-transparent border-0 pt-4 px-4 pb-2 d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+            <h5 class="fw-bold mb-1 text-dark d-flex align-items-center gap-2">
+                <i class="bi bi-layers-half" style="color: var(--tuk-blue);"></i> Recent Support Requests
+            </h5>
+            <p class="text-muted small mb-0">Overview of filed system requests</p>
+        </div>
+        
+        <div class="btn-group shadow-sm rounded-3 overflow-hidden border" role="group" id="filter-tab-group">
+            <button type="button" class="btn btn-sm btn-light fw-medium px-3 py-1.5 border-0 filter-btn active" data-status="all">All</button>
+            <button type="button" class="btn btn-sm btn-light text-warning fw-medium px-3 py-1.5 border-0 filter-btn" data-status="open">Open</button>
+            <button type="button" class="btn btn-sm btn-light text-success fw-medium px-3 py-1.5 border-0 filter-btn" data-status="resolved">Resolved</button>
+        </div>
+    </div>
+
+    <div class="card-body px-4 pb-4 pt-2">
+        {% if tickets %}
+            <div class="table-responsive border rounded-3">
+                <table class="table align-middle mb-0" id="tickets-table">
+                    <thead class="small text-uppercase">
+                        <tr>
+                            <th class="ps-4 py-3" style="width: 50%;">Ticket Details</th>
+                            <th class="py-3">Status</th>
+                            <th class="py-3">Created</th>
+                            <th class="text-end pe-4 py-3" style="width: 15%;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="border-top-0">
+                        {% for ticket in tickets %}
+                        <tr class="ticket-row" data-ticket-status="{{ ticket.status|lower }}">
+                            <td class="ps-4 py-3">
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="p-2 rounded-3 d-inline-flex border bg-light text-secondary" style="font-size: 13px;">
+                                        <i class="bi bi-hash"></i>
+                                    </span>
+                                    <div>
+                                        <span class="fw-semibold text-dark d-block">{{ ticket.title }}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-3">
+                                {% if ticket.status == "resolved" %}
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2.5 py-1.5 rounded-2 fw-semibold">Resolved</span>
+                                {% elif ticket.status == "in_progress" %}
+                                    <span class="badge bg-info-subtle text-info border border-info-subtle px-2.5 py-1.5 rounded-2 fw-semibold">In Progress</span>
+                                {% elif ticket.status == "open" %}
+                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2.5 py-1.5 rounded-2 fw-semibold">Open</span>
+                                {% else %}
+                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2.5 py-1.5 rounded-2 fw-semibold">{{ ticket.status|title }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3 text-muted small">
+                                {% if ticket.created_at %}
+                                    <i class="bi bi-calendar3 me-1 text-secondary"></i> {{ ticket.created_at|date:"M d, Y" }}
+                                {% else %}
+                                    --
+                                {% endif %}
+                            </td>
+                            <td class="text-end pe-4 py-3">
+                                <a href="{% url 'tickets:ticket_detail' ticket.id %}" class="btn btn-sm btn-outline-secondary px-3 rounded-2 fw-medium bg-white">
+                                    <i class="bi bi-arrow-right-short fs-6"></i> Details
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="js-empty-state" class="text-center py-5 my-3 d-none">
+                <div class="bg-light rounded-circle p-4 d-inline-flex mb-3 text-muted border">
+                    <i class="bi bi-filter-circle fs-1" style="color: var(--tuk-blue);"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-1">No matching tickets</h5>
+                <p class="text-muted small mb-0">No entries under this specific status segment match your profile history.</p>
+            </div>
+
+        {% else %}
+            <div class="text-center py-5 my-3">
+                <div class="bg-light rounded-circle p-4 d-inline-flex mb-3 text-muted border border-light-subtle shadow-sm">
+                    <i class="bi bi-folder-x fs-1" style="color: var(--tuk-blue);"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-1">No support tickets tracked</h5>
+                <p class="text-muted small mb-4 mx-auto" style="max-width: 380px;">
+                    You do not have any operational support requests logged right now. Submit an official support query if you need assistance.
+                </p>
+                <a href="{% url 'tickets:ticket_create' %}" class="btn btn-tuk-primary px-4 py-2 fw-medium shadow-sm rounded-3">
+                    <i class="bi bi-plus-lg me-1"></i> File First Request
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const filterButtons = document.querySelectorAll(".filter-btn");
+        const metricCards = document.querySelectorAll(".metric-card");
+        const ticketRows = document.querySelectorAll(".ticket-row");
+        const emptyState = document.getElementById("js-empty-state");
+        const tableResponsive = document.querySelector(".table-responsive");
+
+        function executeFilter(statusKey) {
+            let visibleCount = 0;
+
+            // 1. Update filter tab highlight sync
+            filterButtons.forEach(btn => {
+                if (btn.getAttribute("data-status") === statusKey) {
+                    btn.classList.add("active");
+                } else {
+                    btn.classList.remove("active");
+                }
+            });
+
+            // 2. Update parent metric card highlight layout
+            metricCards.forEach(card => {
+                if (card.getAttribute("data-target-filter") === statusKey) {
+                    card.classList.add("active-filter");
+                } else {
+                    card.classList.remove("active-filter");
+                }
+            });
+
+            // 3. Filter data engine rows
+            ticketRows.forEach(row => {
+                const ticketStatus = row.getAttribute("data-ticket-status");
+                
+                if (statusKey === "all") {
+                    row.style.setProperty('display', '', '');
+                    visibleCount++;
+                } else if (statusKey === "open" && (ticketStatus === "open" || ticketStatus === "in_progress")) {
+                    // "Open" includes tickets currently active or in-progress
+                    row.style.setProperty('display', '', '');
+                    visibleCount++;
+                } else if (ticketStatus === statusKey) {
+                    row.style.setProperty('display', '', '');
+                    visibleCount++;
+                } else {
+                    row.style.display = "none";
+                }
+            });
+
+            // 4. Handle dynamic dynamic empty view switches
+            if (tableResponsive) {
+                if (visibleCount === 0) {
+                    tableResponsive.classList.add("d-none");
+                    emptyState.classList.remove("d-none");
+                } else {
+                    tableResponsive.classList.remove("d-none");
+                    emptyState.classList.add("d-none");
+                }
+            }
+        }
+
+        // Attach layout actions to inline button groups
+        filterButtons.forEach(button => {
+            button.addEventListener("click", function () {
+                executeFilter(this.getAttribute("data-status"));
+            });
+        });
+
+        // Attach identical triggers directly onto top metric statistic elements
+        metricCards.forEach(card => {
+            card.addEventListener("click", function () {
+                executeFilter(this.getAttribute("data-target-filter"));
+            });
+        });
+    });
+</script>
+{% endblock %}

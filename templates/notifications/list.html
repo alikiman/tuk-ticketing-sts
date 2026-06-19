@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications | TUK STS{% endblock %}
+
+{% block content %}
+
+<!-- Custom Styles for Notification Component Layout -->
+<style>
+  .notification-list {
+    display: flex;
+    flex-direction: column;
+  }
+  .notification-item {
+    display: flex;
+    gap: 15px;
+    padding: 20px;
+    border-bottom: 1px solid #e5e7eb;
+    transition: background-color 0.2s ease;
+  }
+  .notification-item:last-child {
+    border-bottom: none;
+  }
+  .notification-item:hover {
+    background-color: #f9fafb;
+  }
+  .notification-icon {
+    font-size: 1.25rem;
+    color: #d98e2c; /* Theme Orange Accent */
+    margin-top: 2px;
+  }
+  .notification-content {
+    flex-grow: 1;
+  }
+  .notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .notification-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    color: #111827;
+  }
+  .notification-time {
+    font-size: 0.8rem;
+    color: #6b7280;
+  }
+  .notification-message {
+    font-size: 0.9rem;
+    color: #374151;
+    margin: 6px 0 0 0;
+  }
+  .panel-header {
+    padding: 20px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .empty-state {
+    padding: 50px 20px;
+    text-align: center;
+    color: #6b7280;
+  }
+  .empty-state i {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    display: inline-block;
+  }
+</style>
+
+<div class="page-heading">
+  <div class="page-heading-copy d-flex align-items-center gap-3 p-3">
+    <span class="page-icon fs-3">
+      <i class="bi bi-bell" aria-hidden="true"></i>
+    </span>
+
+    <div>
+      <p class="eyebrow mb-1 text-muted text-uppercase small fw-bold">System</p>
+      <h1 class="h3 mb-1">Notifications</h1>
+      <p class="text-muted mb-0">
+        Updates, alerts, and system activity in real time.
+      </p>
+    </div>
+  </div>
+</div>
+
+<section class="panel mt-3">
+
+  <div class="panel-header">
+    <div>
+      <h2 class="h5 mb-1 section-title d-flex align-items-center gap-2">
+        <i class="bi bi-bell" aria-hidden="true"></i>
+        <span>All Notifications</span>
+      </h2>
+      <p class="text-muted mb-0">Latest system and ticket updates.</p>
+    </div>
+  </div>
+
+  <div class="notification-list">
+
+    {% for note in notifications %}
+
+      <article class="notification-item">
+
+        <div class="notification-icon">
+          <i class="bi bi-info-circle"></i>
+        </div>
+
+        <div class="notification-content">
+
+          <!-- Fixed the syntax error here from 'শীর্ষ' to 'notification-header' -->
+          <div class="notification-header">
+            <h4 class="notification-title">
+              {{ note.title }}
+            </h4>
+
+            <span class="notification-time">
+              {{ note.created_at|date:"M d, Y • H:i" }}
+            </span>
+          </div>
+
+          <p class="notification-message">
+            {{ note.message }}
+          </p>
+
+        </div>
+
+      </article>
+
+    {% empty %}
+
+      <div class="empty-state">
+        <i class="bi bi-bell-slash"></i>
+        <p class="mb-0">No notifications available</p>
+      </div>
+
+    {% endfor %}
+
+  </div>
+
+</section>
+
+<!-- Script updates client side unread indicators instantly -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Tell the backend to clear notifications once viewed
+    // Replace URL below if your mark-as-read url namespace structure looks different
+    fetch("{% url 'notifications:notifications' %}", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "Content-Type": "application/json"
+        }
+    })
+    .then(response => {
+        // Instantly blank out the red navbar badge without waiting for the 15-second timer
+        const navBadge = document.getElementById('notification-badge-container');
+        if (navBadge) navBadge.innerHTML = '';
+    })
+    .catch(err => console.warn('Could not automatically reset unread count badge:', err));
+  });
+</script>
+
+{% endblock %}

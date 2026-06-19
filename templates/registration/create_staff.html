@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Staff | TUK-STS{% endblock %}
+
+{% block content %}
+
+<!-- FULL PAGE CENTER WRAPPER -->
+<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+
+    <div class="auth-card">
+
+        <!-- ICON -->
+        <div class="text-center mb-3">
+
+            <div class="auth-icon">
+                <i class="bi bi-person-plus"></i>
+            </div>
+
+            <h3 class="auth-title">Create Staff Account</h3>
+            <p class="auth-subtitle">Add a new staff member to the system</p>
+
+        </div>
+
+        <!-- ERROR MESSAGE -->
+        {% if form.errors %}
+            <div class="error-box">
+                <i class="bi bi-exclamation-triangle"></i>
+                Please fix the errors below before continuing.
+            </div>
+        {% endif %}
+
+        <!-- FORM -->
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% for field in form %}
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        {{ field.label }}
+                    </label>
+
+                    {{ field }}
+
+                    {% if field.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ field.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+            {% endfor %}
+
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check2-circle"></i> Create Staff
+            </button>
+
+        </form>
+
+        <!-- FOOTER ACTION -->
+        <div class="auth-footer mt-3">
+            <a href="{% url 'accounts:admin_dashboard' %}">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

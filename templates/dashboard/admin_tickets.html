@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Tickets | TUK-STS{% endblock %}
+
+{% block content %}
+
+<!-- ================= HEADER ================= -->
+<div class="page-heading mb-4">
+
+  <div class="page-heading-copy">
+
+    <span class="page-icon">
+      <i class="bi bi-shield-lock"></i>
+    </span>
+
+    <div>
+      <p class="eyebrow mb-1">Admin Control Panel</p>
+      <h1 class="h3 mb-1">Ticket Management Center</h1>
+      <p class="text-muted mb-0">
+        Monitor, assign, and resolve all system requests.
+      </p>
+    </div>
+
+  </div>
+
+  <div class="heading-actions d-flex gap-2 flex-wrap">
+
+    <a href="{% url 'accounts:admin_dashboard' %}" class="btn btn-outline-dark btn-sm">
+      <i class="bi bi-speedometer2"></i> Dashboard
+    </a>
+
+  </div>
+
+</div>
+
+<!-- ================= STATS ================= -->
+<div class="row g-3 mb-4">
+
+  <div class="col-md-3">
+    <div class="card-box text-center">
+      <h4>{{ tickets|length }}</h4>
+      <p class="text-muted mb-0">Total Tickets</p>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card-box text-center">
+      <h4>{{ unassigned_count }}</h4>
+      <p class="text-muted mb-0">Unassigned</p>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card-box text-center">
+      <h4>{{ open_count }}</h4>
+      <p class="text-muted mb-0">Open</p>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card-box text-center">
+      <h4>{{ resolved_count }}</h4>
+      <p class="text-muted mb-0">Resolved</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- ================= FILTERS ================= -->
+<div class="d-flex gap-2 flex-wrap mb-3">
+
+  <a href="?status=" class="btn btn-sm btn-outline-secondary">All</a>
+  <a href="?status=open" class="btn btn-sm btn-outline-warning">Open</a>
+  <a href="?status=assigned" class="btn btn-sm btn-outline-info">Assigned</a>
+  <a href="?status=in_progress" class="btn btn-sm btn-outline-primary">In Progress</a>
+  <a href="?status=resolved" class="btn btn-sm btn-outline-success">Resolved</a>
+  <a href="?status=closed" class="btn btn-sm btn-outline-dark">Closed</a>
+
+</div>
+
+<!-- ================= TABLE ================= -->
+<section class="card-box">
+
+  <div class="table-responsive">
+
+    <table class="table table-hover align-middle mb-0">
+
+      <thead>
+        <tr>
+          <th>#ID</th>
+          <th>Title</th>
+          <th>Student</th>
+          <th>Assigned</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        {% for ticket in tickets %}
+
+        <tr>
+
+          <td class="fw-bold">#{{ ticket.id }}</td>
+
+          <td>
+            <i class="bi bi-ticket-detailed text-primary"></i>
+            {{ ticket.title }}
+          </td>
+
+          <td>{{ ticket.student.username }}</td>
+
+          <td>
+            {% if ticket.assigned_to %}
+              {{ ticket.assigned_to.username }}
+            {% else %}
+              <span class="badge text-bg-danger">Unassigned</span>
+            {% endif %}
+          </td>
+
+          <td>
+            {% if ticket.status == "open" %}
+              <span class="badge text-bg-warning">Open</span>
+            {% elif ticket.status == "assigned" %}
+              <span class="badge text-bg-info">Assigned</span>
+            {% elif ticket.status == "in_progress" %}
+              <span class="badge text-bg-primary">In Progress</span>
+            {% elif ticket.status == "resolved" %}
+              <span class="badge text-bg-success">Resolved</span>
+            {% elif ticket.status == "closed" %}
+              <span class="badge text-bg-dark">Closed</span>
+            {% else %}
+              <span class="badge text-bg-secondary">{{ ticket.status }}</span>
+            {% endif %}
+          </td>
+
+          <td class="d-flex gap-2 flex-wrap">
+
+            {% if not ticket.assigned_to %}
+              <a href="{% url 'accounts:assign_ticket' ticket.id %}"
+                 class="btn btn-sm btn-primary">
+                <i class="bi bi-person-plus"></i> Assign
+              </a>
+            {% endif %}
+
+            <a href="{% url 'tickets:ticket_detail' ticket.id %}"
+               class="btn btn-sm btn-outline-dark">
+              <i class="bi bi-eye"></i> View
+            </a>
+
+          </td>
+
+        </tr>
+
+        {% empty %}
+
+        <tr>
+          <td colspan="6" class="text-center py-5">
+            <i class="bi bi-inbox fs-1"></i>
+            <p class="mb-0">No tickets found</p>
+            <small class="text-muted">System is clean 🎉</small>
+          </td>
+        </tr>
+
+        {% endfor %}
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</section>
+
+{% endblock %}

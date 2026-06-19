@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile | TUK STS{% endblock %}
+
+{% block content %}
+
+<header class="page-heading d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+  <div class="page-heading-copy d-flex align-items-center gap-3">
+    <span class="page-icon fs-2 text-primary bg-primary-subtle p-2 rounded-3 d-inline-flex align-items-center justify-content-center">
+      <i class="bi bi-person-badge"></i>
+    </span>
+    <div>
+      <p class="text-muted small mb-0">Student Account</p>
+      <h1 class="h3 fw-bold mb-0">{{ user.username }}</h1>
+      <small class="text-muted">Manage your profile information and account settings</small>
+    </div>
+  </div>
+</header>
+
+<div class="row g-4 align-items-start">
+
+  <aside class="col-12 col-lg-4">
+    <div class="card border-0 shadow-sm p-4 text-center">
+      <div class="card-body p-0">
+        
+        <div class="mb-3 position-relative d-inline-block mx-auto">
+          {% if user.profile_pic %}
+            <img id="avatarPreview" src="{{ user.profile_pic.url }}" 
+                 alt="{{ user.username }}'s Profile Picture"
+                 class="rounded-circle shadow-sm border border-2 border-light" 
+                 style="width: 124px; height: 124px; object-fit: cover;">
+          {% else %}
+            <div id="avatarFallback" class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center shadow-sm" 
+                 style="width:124px; height:124px; font-size:44px; font-weight: 600;">
+              {{ user.username|first|upper }}
+            </div>
+            <img id="avatarPreview" class="rounded-circle shadow-sm border border-2 border-light d-none" 
+                 style="width: 124px; height: 124px; object-fit: cover;" alt="Preview">
+          {% endif %}
+        </div>
+
+        <h4 class="fw-bold mb-1">{{ user.username }}</h4>
+        <p class="text-muted small mb-3">{{ user.email }}</p>
+
+        <div class="d-flex justify-content-center gap-2 mb-4">
+          <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill fw-semibold">{{ user.role|title }}</span>
+          <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill fw-semibold">Active</span>
+        </div>
+
+        <hr class="text-muted opacity-25">
+
+        <div class="text-start mt-3">
+          <div class="p-3 mb-2 border border-light-subtle rounded-3 bg-body-tertiary">
+            <small class="text-muted d-block mb-1">Account Status</small>
+            <div class="fw-semibold text-success d-flex align-items-center gap-2">
+              <span class="p-1 bg-success rounded-circle d-inline-block"></span> Active User
+            </div>
+          </div>
+
+          <div class="p-3 border border-light-subtle rounded-3 bg-body-tertiary">
+            <small class="text-muted d-block mb-1">Institutional Portal Role</small>
+            <div class="fw-semibold text-dark">{{ user.role|title }}</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </aside>
+
+  <main class="col-12 col-lg-8">
+    <div class="card border-0 shadow-sm p-4">
+      <div class="card-body p-0">
+
+        <div class="mb-4 border-bottom pb-3">
+          <h5 class="fw-bold mb-1 text-dark d-flex align-items-center gap-2">
+            <i class="bi bi-sliders2 text-primary"></i> Profile Settings
+          </h5>
+          <p class="text-muted small mb-0">
+            Keep your profile imagery up to date. Core institutional fields are managed by administration.
+          </p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+
+          <div class="mb-4">
+            <h6 class="text-uppercase text-primary fw-bold mb-3 small tracking-wider" style="letter-spacing:.5px;">
+              System Information
+            </h6>
+            
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label small text-muted mb-1">Username</label>
+                <input type="text" class="form-control bg-light border-0 py-2" value="{{ user.username }}" readonly disabled>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small text-muted mb-1">Email Address</label>
+                <input type="email" class="form-control bg-light border-0 py-2" value="{{ user.email }}" readonly disabled>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small text-muted mb-1">Assigned Role</label>
+                <input type="text" class="form-control bg-light border-0 py-2" value="{{ user.role|title }}" readonly disabled>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small text-muted mb-1">System Status</label>
+                <input type="text" class="form-control bg-light border-0 py-2 text-success fw-semibold" value="Verified / Active" readonly disabled>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-5">
+            <h6 class="text-uppercase text-primary fw-bold mb-3 small tracking-wider" style="letter-spacing:.5px;">
+              Profile Media Update
+            </h6>
+
+            <div class="p-4 border rounded-3 bg-body-tertiary">
+              <label for="profilePicInput" class="form-label fw-bold text-dark mb-1">Upload New Profile Picture</label>
+              <p class="text-muted small mb-3">Select a replacement file to swap out your current layout placeholder image.</p>
+              
+              <input type="file" id="profilePicInput" name="profile_pic" accept="image/*" class="form-control border-light-subtle shadow-none py-2">
+              
+              <div class="form-text text-muted mt-2 d-flex align-items-center gap-1">
+                <i class="bi bi-info-circle small"></i> Max size 2MB. Supported formats: JPEG, PNG.
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 border-top pt-4">
+            <a href="{% url 'home' %}" class="btn btn-light border px-4 py-2 fw-medium text-secondary">
+              Cancel
+            </a>
+            <button type="submit" class="btn btn-primary px-4 py-2 fw-medium shadow-sm">
+              <i class="bi bi-check2-circle me-1"></i> Save Changes
+            </button>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<script>
+  document.getElementById('profilePicInput').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const previewImg = document.getElementById('avatarPreview');
+        const fallbackDiv = document.getElementById('avatarFallback');
+        
+        previewImg.src = e.target.result;
+        previewImg.classList.remove('d-none');
+        
+        if (fallbackDiv) {
+          fallbackDiv.classList.add('d-none');
+        }
+      }
+      reader.readAsDataURL(file);
+    }
+  });
+</script>
+
+{% endblock %}

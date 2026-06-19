@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Ticket | TUK-STS{% endblock %}
+
+{% block content %}
+
+<style>
+    :root {
+        --tuk-blue: #003366;
+        --tuk-gold: #FFCC00;
+        --tuk-light-gray: #f8fafc;
+    }
+
+    .ticket-card {
+        max-width: 680px;
+        width: 100%;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    }
+
+    .tuk-badge {
+        background: rgba(0, 51, 102, 0.06);
+        color: var(--tuk-blue);
+        border: 1px solid rgba(0, 51, 102, 0.1);
+        font-size: 11px;
+        letter-spacing: 0.5px;
+        padding: 5px 12px;
+        border-radius: 50px;
+    }
+
+    .ticket-icon-box {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: var(--tuk-blue);
+        color: var(--tuk-gold);
+        font-size: 26px;
+    }
+
+    .ticket-form-wrapper input,
+    .ticket-form-wrapper textarea,
+    .ticket-form-wrapper select {
+        width: 100%;
+        background: var(--tuk-light-gray) !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 10px !important;
+        padding: 12px 16px !important;
+        color: #1e293b !important;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .ticket-form-wrapper textarea {
+        min-height: 140px;
+        resize: vertical;
+    }
+
+    .ticket-form-wrapper input:focus,
+    .ticket-form-wrapper textarea:focus,
+    .ticket-form-wrapper select:focus {
+        outline: none !important;
+        border-color: var(--tuk-blue) !important;
+        box-shadow: 0 0 0 4px rgba(0, 51, 102, 0.1) !important;
+        background: #ffffff !important;
+    }
+
+    .btn-tuk-submit {
+        padding: 12px 24px;
+        border-radius: 10px;
+        border: none;
+        background: var(--tuk-blue);
+        color: white;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+
+    .btn-tuk-submit:hover {
+        background: #002244;
+        color: var(--tuk-gold);
+    }
+</style>
+
+<div class="d-flex justify-content-center align-items-start py-5">
+    <div class="ticket-card p-4 p-md-5">
+
+        <!-- HEADER -->
+        <div class="text-center mb-4">
+            <span class="tuk-badge text-uppercase fw-bold mb-2">Technical University of Kenya</span>
+            <div class="ticket-icon-box">
+                <i class="bi bi-ticket-detailed-fill"></i>
+            </div>
+            <h3 class="fw-bold text-dark mb-1">Create Support Ticket</h3>
+            <p class="text-muted small">File an issue directly with the support and administration desk</p>
+        </div>
+
+        <!-- FORM -->
+        <form method="post" class="ticket-form-wrapper" novalidate autocomplete="off">
+            {% csrf_token %}
+
+            <div class="row g-3">
+                {% for field in form %}
+                    <div class="col-12">
+                        <label class="form-label fw-semibold text-secondary small mb-1" for="{{ field.auto_id }}">
+                            {{ field.label }}
+                        </label>
+
+                        {% if 'subject' in field.name|lower or 'title' in field.name|lower %}
+                            <input type="text" 
+                                   name="{{ field.html_name }}" 
+                                   id="{{ field.auto_id }}" 
+                                   placeholder="e.g., Missing HELB Fee Allocation Request" 
+                                   value="{% if field.value %}{{ field.value }}{% endif %}"
+                                   required>
+                        {% elif 'desc' in field.name|lower or 'msg' in field.name|lower or 'body' in field.name|lower %}
+                            <textarea name="{{ field.html_name }}" 
+                                      id="{{ field.auto_id }}" 
+                                      placeholder="Elaborate on your support token query transparently..." 
+                                      required>{% if field.value %}{{ field.value }}{% endif %}</textarea>
+                        {% else %}
+                            {{ field }}
+                        {% endif %}
+
+                        {% if field.help_text %}
+                            <div class="form-text small text-muted mt-1" style="font-size: 11px;">
+                                {{ field.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {% if field.errors %}
+                            <div class="text-danger small mt-1">
+                                <i class="bi bi-x-circle-fill"></i> {{ field.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- ACTION BUTTONS -->
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-tuk-submit flex-fill d-flex align-items-center justify-content-center gap-2">
+                    <i class="bi bi-send-fill"></i> Submit Ticket
+                </button>
+                <a href="{% url 'tickets:ticket_list' %}" class="btn btn-outline-secondary px-4 d-flex align-items-center" style="border-radius:10px;">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+
+{% block title %}Users | TUK-STS Admin{% endblock %}
+
+{% block content %}
+
+<!-- ================= HEADER ================= -->
+<div class="page-heading">
+
+  <div class="page-heading-copy">
+    <span class="page-icon">
+      <i class="bi bi-people"></i>
+    </span>
+
+    <div>
+      <p class="eyebrow mb-1">System Management</p>
+      <h1 class="h3 mb-1">User Administration</h1>
+      <p class="text-muted mb-0">
+        Manage students, staff, and system administrators.
+      </p>
+    </div>
+  </div>
+
+  <div class="heading-actions d-flex gap-2 flex-wrap">
+
+    <a href="{% url 'accounts:create_staff' %}" class="btn btn-primary btn-sm">
+      <i class="bi bi-person-plus"></i> Create Staff
+    </a>
+
+    <a href="{% url 'accounts:admin_dashboard' %}" class="btn btn-outline-dark btn-sm">
+      <i class="bi bi-speedometer2"></i> Dashboard
+    </a>
+
+  </div>
+
+</div>
+
+<!-- ================= ROLE STATS ================= -->
+<div class="row g-3 mt-1">
+
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="card-box text-center">
+      <h4>{{ users|length }}</h4>
+      <p class="text-muted mb-0">Total Users</p>
+    </div>
+  </div>
+
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="card-box text-center">
+      <h4>{{ student_count }}</h4>
+      <p class="text-muted mb-0">Students</p>
+    </div>
+  </div>
+
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="card-box text-center">
+      <h4>{{ staff_count }}</h4>
+      <p class="text-muted mb-0">Staff</p>
+    </div>
+  </div>
+
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="card-box text-center">
+      <h4>{{ admin_count }}</h4>
+      <p class="text-muted mb-0">Admins</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- ================= FILTERS ================= -->
+<div class="d-flex gap-2 flex-wrap mt-3">
+
+  <a href="?role=" class="btn btn-sm btn-outline-secondary">All</a>
+  <a href="?role=student" class="btn btn-sm btn-outline-success">Students</a>
+  <a href="?role=staff" class="btn btn-sm btn-outline-primary">Staff</a>
+  <a href="?role=admin" class="btn btn-sm btn-outline-danger">Admins</a>
+
+</div>
+
+<!-- ================= TABLE PANEL ================= -->
+<section class="card-box mt-3">
+
+  <!-- HEADER -->
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+
+    <div>
+      <h2 class="h5 mb-1">
+        <i class="bi bi-table"></i> Users List
+      </h2>
+      <small class="text-muted">
+        All registered accounts in the system
+      </small>
+    </div>
+
+    <form method="GET" class="d-flex gap-2">
+      <input type="search"
+             name="q"
+             value="{{ request.GET.q }}"
+             class="form-control form-control-sm"
+             placeholder="Search username or email...">
+
+      <button class="btn btn-sm btn-dark">
+        <i class="bi bi-search"></i>
+      </button>
+    </form>
+
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-responsive">
+
+    <table class="table table-hover align-middle mb-0">
+
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Date Joined</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        {% for user in users %}
+
+        <tr>
+
+          <td class="fw-semibold">
+            <i class="bi bi-person-circle text-primary"></i>
+            {{ user.username }}
+          </td>
+
+          <td>{{ user.email }}</td>
+
+          <td>
+            {% if user.role == "admin" %}
+              <span class="badge text-bg-danger">Admin</span>
+            {% elif user.role == "staff" %}
+              <span class="badge text-bg-primary">Staff</span>
+            {% elif user.role == "student" %}
+              <span class="badge text-bg-success">Student</span>
+            {% else %}
+              <span class="badge text-bg-secondary">{{ user.role }}</span>
+            {% endif %}
+          </td>
+
+          <td class="text-muted small">
+            {{ user.date_joined|date:"Y-m-d H:i" }}
+          </td>
+
+        </tr>
+
+        {% empty %}
+
+        <tr>
+          <td colspan="4" class="text-center py-5">
+            <i class="bi bi-people fs-1"></i>
+            <p class="mb-0">No users found</p>
+            <small class="text-muted">Try adjusting your filters</small>
+          </td>
+        </tr>
+
+        {% endfor %}
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</section>
+
+{% endblock %}

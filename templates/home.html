@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+
+{% block title %}Home | TUK-STS{% endblock %}
+
+{% block content %}
+
+<!-- CUSTOM STYLES FOR THE TUK INSTITUTIONAL LANDING PAGE -->
+<style>
+    :root {
+        --tuk-blue: #003366;       /* Official Royal Navy */
+        --tuk-gold: #FFCC00;       /* Official Corporate Gold */
+        --tuk-dark-blue: #001F42;  /* Deep Institutional Base */
+    }
+
+    .hero-section {
+        background: 
+            radial-gradient(circle at top left, rgba(255, 204, 0, 0.15), transparent 40%),
+            radial-gradient(circle at bottom right, rgba(0, 51, 102, 0.5), transparent 50%),
+            var(--tuk-dark-blue);
+        color: #ffffff;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .tuk-home-badge {
+        background: rgba(255, 204, 0, 0.15) !important;
+        color: var(--tuk-gold) !important;
+        border: 1px solid rgba(255, 204, 0, 0.25);
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-tuk-gold {
+        background-color: var(--tuk-gold);
+        color: var(--tuk-dark-blue);
+        font-weight: 700;
+        border: none;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .btn-tuk-gold:hover {
+        background-color: #e6b800;
+        color: var(--tuk-dark-blue);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(255, 204, 0, 0.2);
+    }
+
+    .btn-tuk-outline {
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+        font-weight: 600;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .btn-tuk-outline:hover {
+        background-color: rgba(255, 255, 255, 0.08);
+        border-color: #ffffff;
+        color: #ffffff;
+        transform: translateY(-2px);
+    }
+
+    /* Feature Cards Section styling */
+    .feature-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 35px 25px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.02);
+        transition: all 0.3s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 51, 102, 0.08);
+        border-color: rgba(0, 51, 102, 0.15);
+    }
+
+    .feature-icon-box {
+        width: 56px;
+        height: 56px;
+        background: rgba(0, 51, 102, 0.06);
+        color: var(--tuk-blue);
+        font-size: 24px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        transition: all 0.3s ease;
+    }
+
+    .feature-card:hover .feature-icon-box {
+        background: var(--tuk-blue);
+        color: var(--tuk-gold);
+    }
+</style>
+
+<!-- ================= HERO SECTION ================= -->
+<section class="hero-section text-center rounded-4 shadow-lg mb-5 p-5 mt-3">
+    <div class="container py-3">
+
+        <span class="badge tuk-home-badge px-3 py-2 text-uppercase mb-3 rounded-pill">
+            <i class="bi bi-shield-check me-1"></i> TUK Student Ticketing System
+        </span>
+
+        <h1 class="display-5 fw-bold mb-3 text-white">
+            Fast Support. Smarter Tracking.<br class="d-none d-md-block"> Better Academic Operations.
+        </h1>
+
+        <p class="mb-4 text-white-50 mx-auto" style="max-width: 680px; font-size: 17px; line-height: 1.6;">
+            The official centralized platform for students of The Technical University of Kenya to submit,
+            track, and expedite support tokens directly with the registrar, ICT desk, and finance registries.
+        </p>
+
+        <div class="d-flex justify-content-center align-items-center gap-2">
+            {% if user.is_authenticated %}
+                <a href="{% url 'accounts:dashboard_redirect' %}"
+                   class="btn btn-tuk-gold btn-lg rounded-3 px-4 py-2fs-6 shadow-sm">
+                   <i class="bi bi-speedometer2 me-1"></i> Go to Dashboard
+                </a>
+            {% else %}
+                <a href="{% url 'accounts:register' %}"
+                   class="btn btn-tuk-gold btn-lg rounded-3 px-4 py-2 fs-6 shadow-sm">
+                    <i class="bi bi-person-plus-fill me-1"></i> Register Portal
+                </a>
+
+                <a href="{% url 'accounts:login' %}"
+                   class="btn btn-tuk-outline btn-lg rounded-3 px-4 py-2 fs-6">
+                    <i class="bi bi-box-arrow-in-right me-1"></i> Student Login
+                </a>
+            {% endif %}
+        </div>
+
+    </div>
+</section>
+
+<!-- ================= FEATURE CARDS ================= -->
+<div class="container mb-5">
+    <div class="row g-4">
+
+        <!-- CARD 1 -->
+        <div class="col-md-4">
+            <div class="feature-card h-100 text-center">
+                <div class="feature-icon-box">
+                    <i class="bi bi-ticket-detailed-fill"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-2">Ticket Management</h5>
+                <p class="text-muted small mb-0">
+                    File official query forms regarding admission files, missing units, registration blocks, or financial allocations.
+                </p>
+            </div>
+        </div>
+
+        <!-- CARD 2 -->
+        <div class="col-md-4">
+            <div class="feature-card h-100 text-center">
+                <div class="feature-icon-box">
+                    <i class="bi bi-lightning-charge-fill"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-2">Fast Resolution</h5>
+                <p class="text-muted small mb-0">
+                    Bypass physical queue networks by transmitting secure forms straight to assigned desk officers and departments.
+                </p>
+            </div>
+        </div>
+
+        <!-- CARD 3 -->
+        <div class="col-md-4">
+            <div class="feature-card h-100 text-center">
+                <div class="feature-icon-box">
+                    <i class="bi bi-columns-gap"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-2">Smart Dashboard</h5>
+                <p class="text-muted small mb-0">
+                    Monitor live diagnostic changes on pending files, reference records, and review admin feedback notes natively.
+                </p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
