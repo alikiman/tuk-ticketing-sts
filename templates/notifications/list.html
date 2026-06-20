@@ -4,7 +4,6 @@
 
 {% block content %}
 
-<!-- Custom Styles for Notification Component Layout -->
 <style>
   .notification-list {
     display: flex;
@@ -23,10 +22,18 @@
   .notification-item:hover {
     background-color: #f9fafb;
   }
+  /* Style specifically for highlighting unread notifications */
+  .notification-item.unread {
+    background-color: #fffbeb;
+    border-left: 4px solid #d98e2c;
+  }
   .notification-icon {
     font-size: 1.25rem;
     color: #d98e2c; /* Theme Orange Accent */
     margin-top: 2px;
+  }
+  .notification-icon.read {
+    color: #9ca3af;
   }
   .notification-content {
     flex-grow: 1;
@@ -101,18 +108,25 @@
 
     {% for note in notifications %}
 
-      <article class="notification-item">
+      <article class="notification-item {% if not note.is_read %}unread{% endif %}">
 
-        <div class="notification-icon">
-          <i class="bi bi-info-circle"></i>
+        <div class="notification-icon {% if note.is_read %}read{% endif %}">
+          {% if not note.is_read %}
+            <i class="bi bi-envelope-fill"></i>
+          {% else %}
+            <i class="bi bi-envelope-open"></i>
+          {% endif %}
         </div>
 
         <div class="notification-content">
 
-          <!-- Fixed the syntax error here from 'শীর্ষ' to 'notification-header' -->
           <div class="notification-header">
             <h4 class="notification-title">
-              {{ note.title }}
+              {% if not note.is_read %}
+                New Ticket Update
+              {% else %}
+                Notification
+              {% endif %}
             </h4>
 
             <span class="notification-time">
@@ -141,11 +155,9 @@
 
 </section>
 
-<!-- Script updates client side unread indicators instantly -->
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    // Tell the backend to clear notifications once viewed
-    // Replace URL below if your mark-as-read url namespace structure looks different
+    // Tell the backend to clear notifications once viewed via POST request
     fetch("{% url 'notifications:notifications' %}", {
         method: "POST",
         headers: {
