@@ -90,6 +90,114 @@
             padding: 0.25em 0.45em;
             transform: translate(-15%, -15%);
         }
+
+        /* =========================
+   DARK MODE
+========================= */
+
+body{
+    transition: background .3s,color .3s;
+}
+
+.navbar,
+.card-box,
+.panel,
+.metric-card,
+.page-heading,
+.table,
+footer{
+    transition: background .35s ease,
+                color .35s ease,
+                border-color .35s ease;
+}
+
+
+/* Toggle Button */
+#theme-toggle{
+    width:40px;
+    height:40px;
+    border:none;
+    border-radius:50%;
+    background:transparent;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:18px;
+    color:#003366;
+    transition:.3s;
+}
+
+#theme-toggle:hover{
+    background:#eef2ff;
+    color:#d98e2c;
+    transform:rotate(20deg);
+}
+
+/* DARK MODE */
+
+body.dark-mode{
+    background:#0f172a;
+    color:#f8fafc;
+}
+
+body.dark-mode .navbar{
+    background:#111827;
+    border-bottom:1px solid #334155;
+}
+
+body.dark-mode .card-box,
+body.dark-mode .panel,
+body.dark-mode .metric-card,
+body.dark-mode .page-heading{
+    background:#1e293b;
+    border-color:#334155;
+    color:white;
+}
+
+body.dark-mode .table{
+    background:#1e293b;
+    color:white;
+}
+
+body.dark-mode th,
+body.dark-mode td,
+body.dark-mode p,
+body.dark-mode span,
+body.dark-mode label,
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5{
+    color:#f8fafc !important;
+}
+
+body.dark-mode .text-muted{
+    color:#94a3b8 !important;
+}
+
+body.dark-mode .navbar-brand,
+body.dark-mode .nav-link{
+    color:white !important;
+}
+
+body.dark-mode #theme-toggle{
+    color:#FFCC00;
+}
+
+body.dark-mode #theme-toggle:hover{
+    background:#1e293b;
+}
+/* Footer in Dark Mode */
+body.dark-mode footer{
+    background:#111827 !important;
+    border-top:1px solid #334155 !important;
+}
+
+body.dark-mode footer small{
+    color:#94a3b8 !important;
+}
+
     </style>
 </head>
 
@@ -110,7 +218,7 @@
 
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'home' %}">Home</a>
+                    <a class="nav-link" href="{% url 'accounts:dashboard_redirect' %}">Home</a>
                 </li>
 
                 {% if user.is_authenticated %}
@@ -131,35 +239,51 @@
                 {% endif %}
             </ul>
 
-            <ul class="navbar-nav ms-auto align-items-lg-center">
-                {% if user.is_authenticated %}
-                    <li class="nav-item me-2">
-                        <a class="nav-link position-relative py-2 px-3 d-inline-flex align-items-center" 
-                           href="{% url 'notifications:notifications' %}" 
-                           title="Notifications">
-                            <i class="bi bi-bell-fill fs-5"></i>
-                            <span id="notification-badge-container">
-                                {% if unread_notifications_count > 0 %}
-                                    <span class="position-absolute top-1 start-100 translate-middle badge rounded-pill bg-danger notification-badge">
-                                        {{ unread_notifications_count }}
-                                    </span>
-                                {% endif %}
-                            </span>
-                        </a>
-                    </li>
+<ul class="navbar-nav ms-auto align-items-center gap-2">
+{% if user.is_authenticated %}
 
-                    <li class="nav-item">
-                        <a class="nav-link d-flex align-items-center gap-1" href="{% url 'accounts:profile' %}">
-                            <i class="bi bi-person-circle"></i>
-                            {{ user.username }}
-                        </a>
-                    </li>
+    <!-- Dark Mode -->
+    <li class="nav-item">
+        <button id="theme-toggle" title="Toggle Theme">
+            <i class="bi bi-moon-stars-fill" id="theme-icon"></i>
+        </button>
+    </li>
 
-                    <li class="nav-item">
-                        <a class="nav-link text-danger" href="{% url 'accounts:logout' %}">
-                            Logout
-                        </a>
-                    </li>
+    <!-- Notifications -->
+    <li class="nav-item">
+        <a class="nav-link position-relative py-2 px-3"
+           href="{% url 'notifications:notifications' %}"
+           title="Notifications">
+
+            <i class="bi bi-bell-fill fs-5"></i>
+
+            <span id="notification-badge-container">
+                {% if unread_notifications_count > 0 %}
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notification-badge">
+                        {{ unread_notifications_count }}
+                    </span>
+                {% endif %}
+            </span>
+
+        </a>
+    </li>
+
+    <!-- Profile -->
+    <li class="nav-item">
+        <a class="nav-link d-flex align-items-center gap-1"
+           href="{% url 'accounts:profile' %}">
+            <i class="bi bi-person-circle"></i>
+            {{ user.username }}
+        </a>
+    </li>
+
+    <!-- Logout -->
+    <li class="nav-item">
+        <a class="nav-link text-danger"
+           href="{% url 'accounts:logout' %}">
+            Logout
+        </a>
+    </li>
                 {% else %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'accounts:login' %}">
@@ -173,11 +297,20 @@
     </div>
 </nav>
 
+
+</div>
 <div class="layout">
     <div class="main">
         {% block content %}{% endblock %}
     </div>
 </div>
+
+<!-- FOOTER -->
+<footer class="text-center py-3 mt-5 border-top">
+    <small class="text-muted">
+        © {% now "Y" %} TUK Student Ticketing System | Developed for The Technical University of Kenya.
+    </small>
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -209,6 +342,34 @@
     });
 </script>
 {% endif %}
+<script>
+const btn = document.getElementById("theme-toggle");
+const icon = document.getElementById("theme-icon");
+
+if (btn) {
+
+    // Load saved theme
+    if (localStorage.getItem("theme") === "dark") {
+        document.body.classList.add("dark-mode");
+        icon.classList.replace("bi-moon-stars-fill", "bi-sun-fill");
+    }
+
+    btn.addEventListener("click", () => {
+
+        document.body.classList.toggle("dark-mode");
+
+        if (document.body.classList.contains("dark-mode")) {
+            localStorage.setItem("theme", "dark");
+            icon.classList.replace("bi-moon-stars-fill", "bi-sun-fill");
+        } else {
+            localStorage.setItem("theme", "light");
+            icon.classList.replace("bi-sun-fill", "bi-moon-stars-fill");
+        }
+
+    });
+
+}
+</script>
 
 </body>
 </html>

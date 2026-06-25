@@ -8,12 +8,11 @@ from django.conf.urls.static import static
 
 
 def home(request):
-    # Automatically routes visitors landing on http://127.0.0.1:8000/ to the login screen
-    return redirect('accounts:login')
+    return account_views.home(request)
 
 
 urlpatterns = [
-    # Changed from account_views.home to local home function for the clean login redirect
+    
     path('', home, name='home'),
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
