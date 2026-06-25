@@ -51,19 +51,37 @@ def ticket_create(request):
     if request.method == "POST" and form.is_valid():
         ticket = form.save(commit=False)
         ticket.student = request.user
-        ticket.status = "open"
+        ticket.status = "assigned"
         ticket.save()
 
         # AUTO ASSIGN
         ticket.route_to_staff()
 
-        # Notification for the Student
+        # EMAIL NOTIFICATION TO STUDENT
+        if request.user.email:
+            send_mail(
+                subject="Ticket Submitted Successfully",
+                message=(
+                    f"Hello {request.user.username},\n\n"
+                    f"Your ticket '{ticket.title}' has been received successfully.\n\n"
+                    f"Tracking ID: #{ticket.pk}\n"
+                    f"Category: {ticket.category}\n"
+                    f"Status: {ticket.status.replace('_', ' ').title()}\n\n"
+                    f"We will notify you once there is an update.\n\n"
+                    f"Thank you for using the TUK Ticketing System."
+                ),
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[request.user.email],
+                fail_silently=True,
+            )
+
+        # IN-APP NOTIFICATION FOR STUDENT
         Notification.objects.create(
             user=request.user,
             message=f"Ticket '{ticket.title}' successfully submitted. Tracking ID: #{ticket.pk}."
         )
 
-        # ✅ NEW: Notification to alert Staff when a student creates a ticket
+        # IN-APP NOTIFICATION FOR STAFF
         if ticket.assigned_to:
             Notification.objects.create(
                 user=ticket.assigned_to,
