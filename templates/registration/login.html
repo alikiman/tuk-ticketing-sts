@@ -130,6 +130,16 @@
             color: var(--tuk-gold);
             transform: translateY(-1px);
         }
+        .success-box {
+            background: rgba(25, 135, 84, 0.08);
+            border: 1px solid rgba(25, 135, 84, 0.2);
+            color: #198754;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 13.5px;
+            font-weight: 500;
+}
 
         .error-box {
             background: rgba(220, 53, 69, 0.08);
@@ -192,16 +202,23 @@
     </div>
 
     <!-- MESSAGES -->
-    {% if messages %}
-        {% for message in messages %}
-            {% if message.level_tag != "success" or request.path == "/accounts/login/" %}
-                <div class="error-box d-flex align-items-center gap-2">
-                    <i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i>
-                    <span>{{ message }}</span>
-                </div>
-            {% endif %}
-        {% endfor %}
-    {% endif %}
+{% if messages %}
+    {% for message in messages %}
+
+        {% if message.level_tag == "success" %}
+            <div class="success-box d-flex align-items-center gap-2">
+                <i class="bi bi-check-circle-fill flex-shrink-0"></i>
+                <span>{{ message }}</span>
+            </div>
+        {% else %}
+            <div class="error-box d-flex align-items-center gap-2">
+                <i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i>
+                <span>{{ message }}</span>
+            </div>
+        {% endif %}
+
+    {% endfor %}
+{% endif %}
 
     <!-- LOGIN FORM -->
     <form method="post" class="form-group-wrapper" autocomplete="off">
