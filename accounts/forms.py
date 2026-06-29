@@ -29,7 +29,7 @@ class RegisterForm(forms.ModelForm):
 
         self.fields["email"].widget.attrs.update({
             "class": "form-control",
-            "placeholder": "student@tukenya.ac.ke"
+            "placeholder": "johnkimani@gmail.com"
         })
 
         self.fields["reg_no"].widget.attrs.update({
@@ -85,9 +85,7 @@ class StaffCreationForm(forms.ModelForm):
         # Securely hash the staff password
         user.set_password(self.cleaned_data["password"])
         
-        # FIX THE UNIQUE CONSTRAINT FOR STAFF:
-        # Generate a distinct staff placeholder using their unique username to bypass validation loops
-        user.reg_no = f"STAFF/{user.username.upper().replace(' ', '')}"
+
 
         # Automatically make staff users active team members
         if user.role == "staff":

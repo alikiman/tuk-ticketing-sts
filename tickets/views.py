@@ -4,6 +4,8 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from .models import Ticket, TicketResponse
 from .forms import TicketForm, TicketResponseForm
+from django.core.mail import send_mail
+from django.conf import settings
 
 # Import the Notification model from your notifications application
 from notifications.models import Notification

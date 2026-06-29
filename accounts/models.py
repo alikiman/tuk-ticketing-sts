@@ -34,7 +34,12 @@ class User(AbstractUser):
         blank=True
     )
 
-    reg_no = models.CharField(max_length=50, unique=True)
+    reg_no = models.CharField(
+    max_length=50,
+        unique=True,
+        blank=True,
+        null=True
+    )
 
     phone = models.CharField(max_length=20, blank=True, null=True)
 
